@@ -4,3 +4,4 @@ composer.lock
 config/config.ini
 logs
 node_modules
+config/config.ini
