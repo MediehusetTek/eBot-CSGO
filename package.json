@@ -4,7 +4,7 @@
   "author": "Julien Parodns <destro@esport-tools.net>",
   "dependencies": {
     "formidable": "1.0.x",
-    "socket.io": "*",
+    "socket.io": "<1.0.0",
     "archiver": "0.4.x"
   },
   "engine": "node >= 0.8.x"
