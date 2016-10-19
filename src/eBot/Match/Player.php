@@ -50,14 +50,13 @@ class Player {
     private $firstSide = "";
     private $checkBDD = false;
     private $gotFirstKill = false;
-    private $needSave = false;
 
     public function __construct($match_id, $map_id, $steamid) {
         $this->map_id = $map_id;
         $this->match_id = $match_id;
         $this->steamid = $steamid;
 
-        Logger::debug("Creating objet Player $match_id $map_id $steamid");
+        Logger::debug("Creating object Player $match_id $map_id $steamid");
 
         $sql = \mysql_query("SELECT * FROM players WHERE match_id='" . $this->match_id . "' AND map_id='" . $this->map_id . "' AND steamid = '" . $this->steamid . "'") or dir(mysql_error());
         $req = \mysql_fetch_array($sql);
@@ -93,8 +92,6 @@ class Player {
             \mysql_query("INSERT INTO `players` (`match_id`,`map_id`,`steamid`,`first_side`,`created_at`, `updated_at`) VALUES ('{$this->match_id}','{$this->map_id}', '{$this->steamid}', 'other', NOW(), NOW())") or die(mysql_error());
             $this->mysql_id = \mysql_insert_id();
         }
-
-        $this->needSave = true;
     }
 
     private $team = null;
@@ -160,7 +157,6 @@ class Player {
 
     public function set($name, $val) {
         $this->$name = $val;
-        $this->needSave = true;
     }
 
     public function get($name) {
@@ -169,39 +165,21 @@ class Player {
 
     public function setIp($ip) {
         $this->ip = $ip;
-        if ($this->ip != $ip) {
-            Logger::debug("Setting $ip to " . $this->steamid . " (players #" . $this->mysql_id . ")");
-            mysql_query("UPDATE `player` SET ip='{$ip}' WHERE id='{$this->mysql_id}'");
-        }
+        Logger::debug("Setting $ip to " . $this->steamid . " (players #" . $this->mysql_id . ")");
+        mysql_query("UPDATE `player` SET ip='{$ip}' WHERE id='{$this->mysql_id}'");
     }
 
     public function setCurrentTeam($team, $teamDefault = null) {
-
         if ($team == "CT") {
-            if ($this->currentSide != "ct") {
-                $this->needSave = true;
-                $this->currentSide = "ct";
-            }
+            $this->currentSide = "ct";
         } elseif ($team == "TERRORIST") {
-            if ($this->currentSide != "t") {
-                $this->needSave = true;
-                $this->currentSide = "t";
-            }
+            $this->currentSide = "t";
         } elseif ($team == "ct") {
-            if ($this->currentSide != "ct") {
-                $this->needSave = true;
-                $this->currentSide = "ct";
-            }
+            $this->currentSide = "ct";
         } elseif ($team == "t") {
-            if ($this->currentSide != "t") {
-                $this->needSave = true;
-                $this->currentSide = "t";
-            }
+            $this->currentSide = "t";
         } else {
-            if ($this->currentSide != "other") {
-                $this->needSave = true;
-                $this->currentSide = "other";
-            }
+            $this->currentSide = "other";
         }
 
         $this->setTeam($this->currentSide, $teamDefault);
@@ -215,7 +193,6 @@ class Player {
                 Logger::log("Changing nickname from {$this->name} to $name");
             }
             $this->name = $name;
-            $this->needSave = true;
         }
     }
 
@@ -224,9 +201,7 @@ class Player {
     }
 
     public function save() {
-        if ($this->needSave)
-            mysql_query("UPDATE `players` SET pseudo='" . \mysql_real_escape_string($this->name) . "', current_side='" . $this->currentSide . "' WHERE id='{$this->mysql_id}'") or Logger::error(mysql_error());
-        $this->needSave = false;
+        mysql_query("UPDATE `players` SET pseudo='" . \mysql_real_escape_string($this->name) . "', current_side='" . $this->currentSide . "' WHERE id='{$this->mysql_id}'") or Logger::error(mysql_error());
     }
 
     public function saveScore() {
